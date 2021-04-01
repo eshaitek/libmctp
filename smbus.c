@@ -97,8 +97,9 @@ static int mctp_binding_smbus_tx(struct mctp_binding *b,
 		mctp_prerr("Error in tx of smbus message");
 		return -1;
 	}
-	else
+	else{
 		mctp_smbus_read(smbus);
+	}
 
 	return 0;
 }
@@ -112,10 +113,14 @@ int mctp_smbus_read(struct mctp_binding_smbus *smbus)
 
 	len = read(smbus->in_fd, &rsp_size, sizeof(uint8_t));
 
-	len = read(smbus->in_fd, smbus->rxbuf, sizeof(smbus->rxbuf));
+	if (rsp_size == 0) {
+		mctp_prerr("No resp msg, rsp_size is 0");
+		return -1;
+	}
 
+	len = read(smbus->in_fd, smbus->rxbuf, sizeof(smbus->rxbuf));
 	if (len < 0 || len != rsp_size) {
-		mctp_prerr("Failed to read");
+		mctp_prerr("Failed to read msg");
 		return -1;
 	}
 
